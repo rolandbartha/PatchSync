@@ -1,0 +1,6 @@
+{
+  "name": "PluginExample",
+  "version": "1.0.0",
+  "author": "John Doe",
+  "mainClass": "net.rolandbrt.patchsync.pluginexample.Main"
+}

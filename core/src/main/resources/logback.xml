@@ -1,0 +1,17 @@
+<configuration>
+    <!-- Root logger: INFO and above -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss} [%thread] %-5level %replace(%logger){'net\.rolandbrt\.patchsync\.',''} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- Suppress JGit debug noise -->
+    <logger name="org.eclipse.jgit" level="WARN"/>
+</configuration>

@@ -1,0 +1,35 @@
+{
+  "artifactRepos": {
+    "MainRepo": {
+      "repo": "github.com/username/MainRepo",
+      "branch": "main"
+    },
+    "SecondaryRepo": {
+      "repo": "github.com/username/SecondaryRepo",
+      "branch": "main",
+      "credentials": {
+        "username": "username",
+        "token": "ghp_your_token"
+      }
+    }
+  },
+  "targets": {
+    "serviceA": {
+      "path": "/absolute/path/to/serviceA",
+      "artifacts": ["Commons", "Core", "Storage"]
+    },
+    "serviceB": {
+      "path": "/absolute/path/to/serviceB",
+      "artifacts": ["Commons", "Core", "Notifier"]
+    }
+  },
+  "snapshot": {
+    "keepDays": 30,
+    "maxSnapshots": 20
+  },
+  "githubConfig": {
+    "port": 8000,
+    "endpoint": "github-update",
+    "token": "PATCHSYNC_TOKEN"
+  }
+}

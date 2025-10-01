@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "name": "Core",
+      "path": "Core/core.jar"
+    },
+    {
+      "name": "Notifier",
+      "path": "Notifier/notifier.jar"
+    },
+    {
+      "name": "Storage",
+      "path": "Storage/storage.jar"
+    },
+    {
+      "name": "Commons",
+      "path": "Commons/commons.jar"
+    }
+  ]
+}
