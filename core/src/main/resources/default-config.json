@@ -1,5 +1,5 @@
 {
-  "artifactRepos": {
+  "repositories": {
     "MainRepo": {
       "repo": "github.com/username/MainRepo",
       "branch": "main"

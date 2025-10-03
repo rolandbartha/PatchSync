@@ -1,6 +1,7 @@
 package net.rolandbrt.patchsync.configuration;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data

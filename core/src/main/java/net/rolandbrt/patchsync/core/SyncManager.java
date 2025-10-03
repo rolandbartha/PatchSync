@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.rolandbrt.patchsync.App;
-import net.rolandbrt.patchsync.AppConfig;
+import net.rolandbrt.patchsync.configuration.AppConfig;
 import net.rolandbrt.patchsync.deploy.DeploymentManager;
 import net.rolandbrt.patchsync.event.DeployUpdateEvent;
 import net.rolandbrt.patchsync.event.RollbackUpdateEvent;
@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 public class SyncManager {
+    private final ExecutorService httpThread = Executors.newFixedThreadPool(2);
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Getter
@@ -68,19 +69,20 @@ public class SyncManager {
                 exchange.close();
             }
         });
-        server.setExecutor(Executors.newFixedThreadPool(4));
+        server.setExecutor(httpThread);
         server.start();
         log.info("Endpoint listening on port 8080");
     }
 
     public void close() {
+        httpThread.shutdown();
         executor.shutdown();
-        if (server != null) {
-            log.info("Stopping endpoint...");
-            server.stop(1);
-        }
         if (deploymentManager != null) {
             deploymentManager.close();
+        }
+        if (server != null) {
+            log.info("Stopping endpoint...");
+            server.stop(0);
         }
     }
 
@@ -104,9 +106,6 @@ public class SyncManager {
         App.getInstance().getPluginManager().fireEvent(event);
 
         deploymentManager.deploy(artifacts);
-
-        log.info("Artifacts updated and deployed: {}", artifacts.stream()
-                .map(Artifact::getName).toList());
     }
 
     public void rollback(String snapshotId, String reason) {

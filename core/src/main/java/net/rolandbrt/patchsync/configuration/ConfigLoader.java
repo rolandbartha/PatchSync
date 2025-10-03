@@ -1,7 +1,6 @@
 package net.rolandbrt.patchsync.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import net.rolandbrt.patchsync.AppConfig;
 import net.rolandbrt.patchsync.util.JsonUtils;
 
 import java.io.*;
@@ -30,7 +29,7 @@ public class ConfigLoader {
         try {
             AppConfig config = JsonUtils.fromJson(file, AppConfig.class);
             log.info("Loaded configuration with {} repos and {} targets",
-                    config.getArtifactRepos().size(),
+                    config.getRepositories().size(),
                     config.getTargets().size());
             return config;
         } catch (Exception e) {

@@ -237,6 +237,7 @@ version: 1.0
 author: YourName
 mainClass: com.example.ExamplePlugin
 ```
+
 ## 🛠 Plugin API
 
 Each plugin extends the SyncPlugin abstract class from the api module:

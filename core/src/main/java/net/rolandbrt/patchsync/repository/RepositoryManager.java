@@ -2,7 +2,7 @@ package net.rolandbrt.patchsync.repository;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.rolandbrt.patchsync.AppConfig;
+import net.rolandbrt.patchsync.configuration.AppConfig;
 import net.rolandbrt.patchsync.configuration.ArtifactRepoConfig;
 import net.rolandbrt.patchsync.configuration.RepositoryArtifactConfig;
 import net.rolandbrt.patchsync.data.Artifact;
@@ -28,10 +28,10 @@ public class RepositoryManager {
         log.info("Checking all repos for updates...");
         List<Artifact> artifacts = new ArrayList<>();
 
-        config.getArtifactRepos().forEach((name, repoCfg) -> {
+        config.getRepositories().forEach((name, repoCfg) -> {
             File repoDir = new File(reposDir, name);
             try {
-                updateRepo(repoCfg, repoDir);
+                updateRepo(name, repoCfg, repoDir);
                 artifacts.addAll(loadArtifacts(repoDir, name, repoCfg));
             } catch (Exception e) {
                 log.error("Failed to update repo {} -> {}", repoCfg.getRepo(), e.getMessage());
@@ -42,19 +42,19 @@ public class RepositoryManager {
 
     public List<Artifact> fetchArtifactsFromMessage(UpdateMessage message) throws Exception {
         File repoDir = new File(reposDir, message.getRepoName());
-        ArtifactRepoConfig repoCfg = config.getArtifactRepos().get(message.getRepoName());
+        ArtifactRepoConfig repoCfg = config.getRepositories().get(message.getRepoName());
         if (repoCfg == null) return Collections.emptyList();
-        updateRepo(repoCfg, repoDir);
+        updateRepo(message.getRepoName(), repoCfg, repoDir);
         return loadArtifacts(repoDir, message.getRepoName(), repoCfg);
     }
 
-    private void updateRepo(ArtifactRepoConfig repoCfg, File repoDir) throws Exception {
+    private void updateRepo(String name, ArtifactRepoConfig repoCfg, File repoDir) throws Exception {
         String repoUrl = repoCfg.getRepo();
         String branch = repoCfg.getBranch() != null ? repoCfg.getBranch() : "main";
         RepositoryCredentials credentials = repoCfg.getCredentials();
 
         if (!repoDir.exists()) {
-            log.info("Cloning {} -> {}", repoUrl, repoDir);
+            log.info("Cloning {}({}) (branch: {}) -> {}", name, repoUrl, branch, repoDir);
             CloneCommand clone = Git.cloneRepository()
                     .setURI("https://" + repoUrl + ".git")
                     .setDirectory(repoDir)
@@ -70,7 +70,7 @@ public class RepositoryManager {
             clone.call();
         } else {
             try (Git git = Git.open(repoDir)) {
-                log.info("Pulling latest for {} (branch: {})", repoUrl, branch);
+                log.info("Pulling latest for {}({}) (branch: {})", name, repoUrl, branch);
                 PullCommand pull = git.pull().setRemoteBranchName(branch);
                 if (credentials != null) {
                     pull.setCredentialsProvider(

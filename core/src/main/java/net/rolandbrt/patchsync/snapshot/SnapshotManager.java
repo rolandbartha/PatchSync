@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.rolandbrt.patchsync.configuration.SnapshotConfig;
 import net.rolandbrt.patchsync.data.Artifact;
 import net.rolandbrt.patchsync.data.Snapshot;
+import net.rolandbrt.patchsync.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,16 +41,24 @@ public class SnapshotManager {
         try {
             if (!snapshotDir.exists())
                 snapshotDir.mkdirs();
+            StringBuilder savedArtifacts = new StringBuilder();
             List<Path> backedUpFiles = new ArrayList<>();
             for (Artifact artifact : artifacts) {
+                String fileName = FileUtils.getFileNameWithoutExtension(artifact.getFile().getName());
+                String fileExtension = FileUtils.getFileExtension(artifact.getFile().getName());
+                String targetName = fileName + "_" + artifact.getRepo() +
+                        (fileExtension.isEmpty() ? "" : "." + fileExtension);
                 Path source = artifact.getFile().toPath();
-                Path target = snapshotDir.toPath().resolve(artifact.getFile().getName());
+                Path target = snapshotDir.toPath().resolve(targetName);
                 if (Files.exists(source)) {
                     Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                     backedUpFiles.add(target);
-                    log.info("Backed up [{}] -> [{}]", artifact.getName(), target);
+                    if (!savedArtifacts.isEmpty()) savedArtifacts.append(", ");
+                    savedArtifacts.append(artifact.getName()).append(":").append(artifact.getRepo());
                 }
             }
+            if (!savedArtifacts.isEmpty())
+                log.info("Backed up {} artifacts: [{}] to snapshot dir [{}]", backedUpFiles.size(), savedArtifacts, timestamp);
             cleanOldSnapshots();
             return Snapshot.builder()
                     .id(timestamp)
@@ -81,11 +90,12 @@ public class SnapshotManager {
 
             for (Path file : paths.toList()) {
                 if (!Files.isRegularFile(file)) continue;
-
+                String fileName = FileUtils.getFileNameWithoutExtension(file.getFileName().toString());
+                String[] nameRepo = fileName.split("_", 2);
                 Artifact artifact = Artifact.builder()
-                        .name(file.getFileName().toString())
+                        .name(nameRepo[0])
                         .file(file.toFile())
-                        .repo("unknown") // repo info unavailable during restore
+                        .repo(nameRepo.length < 2 || nameRepo[1] == null ? "main" : nameRepo[1])
                         .build();
                 restoredArtifacts.add(artifact);
             }

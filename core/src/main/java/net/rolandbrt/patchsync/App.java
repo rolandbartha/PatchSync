@@ -3,6 +3,7 @@ package net.rolandbrt.patchsync;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.rolandbrt.patchsync.configuration.AppConfig;
 import net.rolandbrt.patchsync.plugin.PluginManager;
 import net.rolandbrt.patchsync.command.*;
 import net.rolandbrt.patchsync.configuration.ConfigLoader;

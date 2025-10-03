@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class UpdateMessage {
-    private String repoName, commit, actor, timestamp;
+    private String repoName, commit, actor, timestamp, branch;
 }

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -29,7 +30,6 @@ public class DeploymentManager {
             log.warn("No artifacts to deploy");
             return;
         }
-
         for (Map.Entry<String, TargetConfig> entry : servers.entrySet()) {
             String targetName = entry.getKey();
             TargetConfig targetConfig = entry.getValue();
@@ -43,27 +43,39 @@ public class DeploymentManager {
                     continue;
                 }
             }
-
-            for (Artifact artifact : artifacts) {
-                if (!targetConfig.getArtifacts().contains(artifact.getName())) {
-                    continue; // this target doesn't use this artifact
-                }
-
-                Path targetArtifactPath = targetDir.resolve(artifact.getFile().getName());
-
-                try {
-                    // Backup existing artifact if it exists
-                    //if (Files.exists(targetArtifactPath)) {
-                    //    snapshotManager.snapshotFile(targetArtifactPath);
-                    //}
-
-                    // Copy artifact to target folder
-                    FileUtils.copy(artifact.getFile().toPath(), targetArtifactPath);
-                    log.info("Deployed artifact [{}] to target [{}]", artifact.getName(), targetName);
-                } catch (IOException e) {
-                    log.error("Failed to deploy artifact [{}] to target [{}]", artifact.getName(), targetName, e);
+            Map<String, List<String>> grouped = targetConfig.getArtifacts().stream()
+                    .map(entry1 -> entry1.split(":", 2))
+                    .collect(Collectors.groupingBy(parts -> parts[1],
+                            Collectors.mapping(parts -> parts[0], Collectors.toList())));
+            StringBuilder deployedArtifacts = new StringBuilder();
+            StringBuilder failedArtifacts = new StringBuilder();
+            for (Map.Entry<String, List<String>> repoEntry : grouped.entrySet()) {
+                String repoName = repoEntry.getKey();
+                List<String> repoArtifacts = repoEntry.getValue();
+                for (Artifact artifact : artifacts) {
+                    if (!artifact.getRepo().equalsIgnoreCase(repoName)) continue;
+                    if (!repoArtifacts.contains(artifact.getName())) continue;
+                    Path targetArtifactPath = targetDir.resolve(artifact.getFile().getName());
+                    try {
+                        // Backup existing artifact if it exists
+                        //if (Files.exists(targetArtifactPath)) {
+                        //    snapshotManager.snapshotFile(targetArtifactPath);
+                        //}
+                        // Copy artifact to target folder
+                        FileUtils.copy(artifact.getFile().toPath(), targetArtifactPath);
+                        if (!deployedArtifacts.isEmpty()) deployedArtifacts.append(", ");
+                        deployedArtifacts.append(artifact.getName()).append(":").append(repoName);
+                    } catch (IOException e) {
+                        if (!failedArtifacts.isEmpty()) failedArtifacts.append(", ");
+                        failedArtifacts.append(artifact.getName()).append(":").append(repoName);
+                        log.error("Failed to deploy artifact [{}:{}] to target [{}]", artifact.getName(), repoName, targetName, e);
+                    }
                 }
             }
+            if (!deployedArtifacts.isEmpty())
+                log.info("Deployed artifacts [{}] to target [{}]", deployedArtifacts, targetName);
+            if (!failedArtifacts.isEmpty())
+                log.info("Failed to deploy artifacts [{}] to target [{}]", failedArtifacts, targetName);
         }
     }
 
