@@ -1,5 +1,6 @@
 package net.rolandbrt.patchsync.plugin;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.rolandbrt.patchsync.api.Event;
 import net.rolandbrt.patchsync.api.Plugin;
@@ -19,9 +20,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class PluginManager {
     private final List<Plugin> plugins = new CopyOnWriteArrayList<>();
+    @Getter
+    private static final File pluginsDir = new File("plugins");
 
     public void load() {
-        File pluginsDir = new File("plugins");
         if (!pluginsDir.exists()) {
             pluginsDir.mkdirs();
         }

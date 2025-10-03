@@ -50,15 +50,6 @@ tasks.register<Zip>("setup") {
         println(it.path)
         from(zipTree(it))
     }
-    finalizedBy("deployToTest")
-}
-
-tasks.register<Copy>("deployToTest") {
-    dependsOn(tasks.shadowJar)
-    from(tasks.shadowJar.get().archiveFile)
-    into("C:\\Users\\Roli\\Desktop\\New folder (7)\\PatchSync")
-    rename { "custom.jar" }
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.build {

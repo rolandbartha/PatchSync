@@ -25,7 +25,7 @@ public class SnapshotManager {
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private final SnapshotConfig config;
     @Getter
-    private final File snapshotsDir = new File("snapshots");
+    private static final File snapshotsDir = new File("snapshots");
 
     /**
      * Create a snapshot of the given artifacts.

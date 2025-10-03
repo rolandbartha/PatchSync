@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class RepositoryManager {
     private final AppConfig config;
-    private final File reposDir = new File("repos");
+    private static final File reposDir = new File("repos");
 
     public List<Artifact> checkAllRepos() {
         log.info("Checking all repos for updates...");
